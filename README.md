@@ -9,12 +9,12 @@ An intelligent place discovery application that combines **AI-powered natural la
 ## 🚀 Features
 
 - **🤖 AI-Powered Search**: Uses Ollama with llama3.1:8b model for intelligent query interpretation
-- **🗺️ Interactive Maps**: Beautiful Leaflet.js-powered maps with marker clustering
-- **🌍 Global Coverage**: Powered by OpenStreetMap's comprehensive geographic database
-- **📱 Responsive Design**: Modern UI that works perfectly on desktop and mobile
-- **⚡ Real-time Results**: Fast API responses with proper error handling and timeouts
-- **🎯 Smart Suggestions**: Quick-access buttons for popular searches
-- **💫 Modern UI/UX**: Gradient designs, animations, and intuitive interactions
+- **Interactive Maps**: Beautiful Leaflet.js-powered maps with marker clustering
+- **Global Coverage**: Powered by OpenStreetMap's comprehensive geographic database
+- **Responsive Design**: Modern UI that works perfectly on desktop and mobile
+- **Real-time Results**: Fast API responses with proper error handling and timeouts
+- **Smart Suggestions**: Quick-access buttons for popular searches
+- **Modern UI/UX**: Gradient designs, animations, and intuitive interactions
 
 ## 🛠️ Technology Stack
 
@@ -269,5 +269,3 @@ If you encounter any issues or have questions:
 - [ ] **Advanced Analytics**: Usage patterns and popular locations
 
 ---
-
-**Built with ❤️ using AI, Maps, and Modern Web Technologies**
