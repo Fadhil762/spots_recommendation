@@ -1,0 +1,480 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>🌟 Spots Recommendation - Discover Amazing Places</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        color: #333;
+      }
+      
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+      }
+      
+      .header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        padding: 30px;
+        text-align: center;
+        color: white;
+      }
+      
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 300;
+      }
+      
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+      
+      .search-section {
+        padding: 30px;
+        background: #f8f9ff;
+      }
+      
+      .search-container {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      
+      .search-input {
+        flex: 1;
+        min-width: 300px;
+        padding: 15px 20px;
+        border: 2px solid #e1e5e9;
+        border-radius: 50px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: white;
+      }
+      
+      .search-input:focus {
+        outline: none;
+        border-color: #4facfe;
+        box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+      }
+      
+      .search-btn {
+        padding: 15px 30px;
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border: none;
+        border-radius: 50px;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 120px;
+      }
+      
+      .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+      }
+      
+      .search-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+      
+      .quick-suggestions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 15px;
+      }
+      
+      .suggestion-chip {
+        padding: 8px 16px;
+        background: white;
+        border: 1px solid #e1e5e9;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+      
+      .suggestion-chip:hover {
+        background: #4facfe;
+        color: white;
+        border-color: #4facfe;
+      }
+      
+      .content-section {
+        padding: 0 30px 30px;
+      }
+      
+      .status-message {
+        text-align: center;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 10px;
+        font-size: 16px;
+      }
+      
+      .status-searching {
+        background: #e3f2fd;
+        color: #1976d2;
+        border: 1px solid #bbdefb;
+      }
+      
+      .status-error {
+        background: #ffebee;
+        color: #d32f2f;
+        border: 1px solid #ffcdd2;
+      }
+      
+      .status-success {
+        background: #e8f5e8;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
+      }
+      
+      .results-section {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 30px;
+        margin-top: 20px;
+      }
+      
+      #map { 
+        height: 500px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      }
+      
+      .results-list {
+        max-height: 500px;
+        overflow-y: auto;
+      }
+      
+      .place-item {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid #4facfe;
+      }
+      
+      .place-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      }
+      
+      .place-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+      }
+      
+      .place-address {
+        color: #666;
+        margin-bottom: 12px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .place-category {
+        display: inline-block;
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 12px;
+      }
+      
+      .place-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #4facfe;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        transition: color 0.3s ease;
+      }
+      
+      .place-link:hover {
+        color: #00f2fe;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #4facfe;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @media (max-width: 768px) {
+        .container {
+          margin: 10px;
+          border-radius: 15px;
+        }
+        
+        .header h1 {
+          font-size: 2rem;
+        }
+        
+        .search-container {
+          flex-direction: column;
+        }
+        
+        .search-input {
+          min-width: auto;
+        }
+        
+        .results-section {
+          grid-template-columns: 1fr;
+        }
+        
+        .quick-suggestions {
+          justify-content: center;
+        }
+      }
+      
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1><i class="fas fa-map-marker-alt"></i> Spots Recommendation</h1>
+        <p>Discover amazing places powered by AI and OpenStreetMap</p>
+      </div>
+      
+      <div class="search-section">
+        <div class="search-container">
+          <input 
+            id="q" 
+            class="search-input"
+            placeholder="Try: 'best seafood in Jakarta' or 'coffee shops in Bandung'" 
+            onkeypress="if(event.key==='Enter') run()"
+          />
+          <button class="search-btn" onclick="run()" id="searchBtn">
+            <i class="fas fa-search"></i> Search
+          </button>
+        </div>
+        
+        <div class="quick-suggestions">
+          <div class="suggestion-chip" onclick="fillSearch('restaurants in Jakarta')">🍽️ Restaurants in Jakarta</div>
+          <div class="suggestion-chip" onclick="fillSearch('coffee shops in Bandung')">☕ Coffee in Bandung</div>
+          <div class="suggestion-chip" onclick="fillSearch('museums in Yogyakarta')">🏛️ Museums in Yogyakarta</div>
+          <div class="suggestion-chip" onclick="fillSearch('parks in Surabaya')">🌳 Parks in Surabaya</div>
+        </div>
+      </div>
+      
+      <div class="content-section">
+        <div id="msg" class="status-message hidden"></div>
+        
+        <div class="results-section hidden" id="resultsSection">
+          <div id="map"></div>
+          <div class="results-list" id="list"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+      let map, markers;
+      
+      function initMap(){
+        map = L.map('map').setView([-6.2,106.8], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        markers = L.layerGroup().addTo(map);
+      }
+      
+      function fillSearch(text) {
+        document.getElementById('q').value = text;
+        document.getElementById('q').focus();
+      }
+      
+      function showMessage(text, type = 'searching') {
+        const msgEl = document.getElementById('msg');
+        msgEl.textContent = text;
+        msgEl.className = `status-message status-${type}`;
+        msgEl.classList.remove('hidden');
+      }
+      
+      function hideMessage() {
+        document.getElementById('msg').classList.add('hidden');
+      }
+      
+      function setLoading(isLoading) {
+        const searchBtn = document.getElementById('searchBtn');
+        const searchInput = document.getElementById('q');
+        
+        if (isLoading) {
+          searchBtn.disabled = true;
+          searchBtn.innerHTML = '<div class="loading-spinner"></div>';
+          searchInput.disabled = true;
+        } else {
+          searchBtn.disabled = false;
+          searchBtn.innerHTML = '<i class="fas fa-search"></i> Search';
+          searchInput.disabled = false;
+        }
+      }
+      
+      function showResults() {
+        document.getElementById('resultsSection').classList.remove('hidden');
+      }
+      
+      function hideResults() {
+        document.getElementById('resultsSection').classList.add('hidden');
+      }
+
+      async function run(){
+        const prompt = document.getElementById('q').value.trim();
+        if (!prompt) {
+          showMessage('Please enter a search query', 'error');
+          return;
+        }
+        
+        setLoading(true);
+        showMessage('🔍 Searching for amazing places...', 'searching');
+        hideResults();
+        
+        try {
+          console.log('Sending request to: http://127.0.0.1:8000/chat');
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
+          
+          const r = await fetch('http://127.0.0.1:8000/chat', {
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body: JSON.stringify({prompt}),
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          console.log('Response status:', r.status);
+          
+          if (!r.ok) {
+            throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+          }
+          
+          const data = await r.json();
+          console.log('Response data:', data);
+          
+          markers.clearLayers();
+          
+          if (!data.items || data.items.length === 0) {
+            showMessage('No places found. Try a different search term!', 'error');
+            setLoading(false);
+            return;
+          }
+          
+          // Show success message
+          showMessage(`✨ Found ${data.items.length} amazing places!`, 'success');
+          setTimeout(hideMessage, 3000);
+          
+          // Display results
+          showResults();
+          const list = document.getElementById('list');
+          list.innerHTML = '';
+          let bounds = [];
+          
+          data.items.forEach((x, index) => {
+            // Add marker to map
+            const marker = L.marker([x.lat, x.lon]).addTo(markers)
+              .bindPopup(`<b>${x.name}</b><br/>${x.address || ''}`);
+            bounds.push([x.lat, x.lon]);
+            
+            // Create list item
+            const div = document.createElement('div');
+            div.className = 'place-item';
+            
+            const categoryTag = x.category ? `<div class="place-category">${x.category}</div>` : '';
+            const addressDisplay = x.address ? `<div class="place-address"><i class="fas fa-location-dot"></i> ${x.address}</div>` : '';
+            
+            div.innerHTML = `
+              ${categoryTag}
+              <div class="place-name">${x.name}</div>
+              ${addressDisplay}
+              <a class="place-link" target="_blank" href="https://www.openstreetmap.org/?mlat=${x.lat}&mlon=${x.lon}#map=17/${x.lat}/${x.lon}">
+                <i class="fas fa-external-link-alt"></i> View on OpenStreetMap
+              </a>
+            `;
+            
+            // Add click handler to focus on map
+            div.addEventListener('click', () => {
+              map.setView([x.lat, x.lon], 16);
+              marker.openPopup();
+            });
+            
+            list.appendChild(div);
+          });
+          
+          if(bounds.length){ 
+            map.fitBounds(bounds, {padding: [20, 20]});
+          }
+        
+        } catch (error) {
+          console.error('Error details:', error);
+          let errorMessage = 'Something went wrong. Please try again.';
+          
+          if (error.name === 'AbortError') {
+            errorMessage = '⏱️ Request timed out. The server might be busy, please try again.';
+          } else if (error.message.includes('fetch') || error.message.includes('NetworkError')) {
+            errorMessage = '🔌 Cannot connect to server. Make sure the backend is running on port 8000.';
+          } else if (error.message.includes('HTTP')) {
+            errorMessage = `🚫 Server error: ${error.message}`;
+          }
+          
+          showMessage(errorMessage, 'error');
+        } finally {
+          setLoading(false);
+        }
+      }
+      
+      // Initialize map when page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        initMap();
+      });
+    </script>
+  </body>
+</html>
